@@ -6,9 +6,8 @@ public class TestModel {
 
 		Model model = new Model();
 		
-		/*
-		 * 	Write here your test model
-		 */
+		//System.out.println(model.getTuttiICorsi());
+	
 
 	}
 

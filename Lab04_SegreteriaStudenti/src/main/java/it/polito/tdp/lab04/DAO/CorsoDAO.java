@@ -33,11 +33,12 @@ public class CorsoDAO {
 				int numeroCrediti = rs.getInt("crediti");
 				String nome = rs.getString("nome");
 				int periodoDidattico = rs.getInt("pd");
+				
+				Corso c = new Corso (rs.getString("codins"), rs.getInt("crediti"), rs.getString("nome"), rs.getInt("pd"));
 
 				System.out.println(codins + " " + numeroCrediti + " " + nome + " " + periodoDidattico);
 
-				// Crea un nuovo JAVA Bean Corso
-				// Aggiungi il nuovo oggetto Corso alla lista corsi
+				corsi.add(c);
 			}
 
 			conn.close();
@@ -46,25 +47,99 @@ public class CorsoDAO {
 			
 
 		} catch (SQLException e) {
-			// e.printStackTrace();
+
 			throw new RuntimeException("Errore Db", e);
 		}
 	}
 	
 	
-	/*
+	/*/*
 	 * Dato un codice insegnamento, ottengo il corso
-	 */
+	 
 	public void getCorso(Corso corso) {
 		// TODO
-	}
+	}*/
 
+	
 	/*
 	 * Ottengo tutti gli studenti iscritti al Corso
 	 */
-	public void getStudentiIscrittiAlCorso(Corso corso) {
-		// TODO
+	public List<Studente> getStudentiIscrittiAlCorso(Corso corso) {
+		final String sql = "SELECT s.matricola, s.cognome, s.nome, s.CDS FROM studente as s, iscrizione i WHERE s.matricola=i.matricola AND i.codins=?";
+		List<Studente> studenti = new LinkedList<Studente>();
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, corso.getCodins());
+
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+
+				Integer matricola = rs.getInt("matricola");
+				String cognome = rs.getString("cognome");
+				String nome = rs.getString("nome");
+				String CDS = rs.getString("CDS");
+				
+				Studente s = new Studente (matricola, cognome, nome, CDS);
+
+
+				studenti.add(s);
+			}
+
+			conn.close();
+			
+			return studenti;
+			
+
+		} catch (SQLException e) {
+
+			throw new RuntimeException("Errore Db", e);
+		}
+		
 	}
+	
+	
+	public boolean isIscritto (Integer matricola, Corso corso) {
+		final String sql = "SELECT s.matricola, s.cognome, s.nome, s.CDS FROM studente as s, corso as c, iscrizione i WHERE s.matricola=i.matricola AND c.codins=i.codins AND c.codins=? AND s.matricola=?";
+
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, corso.getCodins());
+			st.setInt(2, matricola);
+
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+
+				String cognome = rs.getString("cognome");
+				String nome = rs.getString("nome");
+				String CDS = rs.getString("CDS");
+				
+				Studente s = new Studente (matricola, cognome, nome, CDS);
+
+				return true;
+			}
+
+			conn.close();
+			
+
+		} catch (SQLException e) {
+
+			throw new RuntimeException("Errore Db", e);
+		}
+		return false;
+		
+	}
+	
+	
+	
+	
+	
+	
+	
 
 	/*
 	 * Data una matricola ed il codice insegnamento, iscrivi lo studente al corso.
@@ -74,5 +149,6 @@ public class CorsoDAO {
 		// ritorna true se l'iscrizione e' avvenuta con successo
 		return false;
 	}
+	
 
 }
